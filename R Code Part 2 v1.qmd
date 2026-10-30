@@ -1,0 +1,447 @@
+---
+title: "R Code Part 2 v1"
+format: html
+editor: visual
+---
+
+## Data
+
+```{r}
+library(tidyverse, quietly = TRUE)
+library(dplyr)
+library(stringr)
+library(plotly)
+
+akc_feature_description <- read.csv("~/Loyola/2025 Fall/DSCI_401/Homework/Project/Part 1/AKC Dog Breed Feature Descriptions.csv")
+akc_popular_ranking <- read.csv("~/Loyola/2025 Fall/DSCI_401/Homework/Project/Part 1/AKC_Dog_Breed_Ranking_2013_2023.csv")
+adoptable_pets <- read.csv("~/Loyola/2025 Fall/DSCI_401/Homework/Project/Part 1/Animal_Shelter_Intake_and_Outcome_20250926.csv")
+
+#akc_feature_description %>% 
+ # glimpse()
+
+#Rename first column from "Name" to "Breed"
+feat_desc_name_renamed <- akc_feature_description %>% 
+  rename(Breed = Name)
+
+#Rename row "Cirneco dell‚ÄôEtna" to "Cirneco Dell’Etna"
+feat_desc_name_renamed$Breed[feat_desc_name_renamed$Breed == "Cirneco dell‚ÄôEtna"] <- "Cirneco Dell’Etna"
+feat_desc_name_renamed$Breed[feat_desc_name_renamed$Breed == "Coton de Tulear"] <- "Coton De Tulear"
+feat_desc_name_renamed$Breed[feat_desc_name_renamed$Breed == "Poodle (Standard)"] <- "Poodle"
+feat_desc_name_renamed$Breed[feat_desc_name_renamed$Breed == "Petits Bassets Griffons Vendeen"] <- "Petit Basset Griffon Vendeen"
+feat_desc_name_renamed$Breed[feat_desc_name_renamed$Breed == "Norwegian Lundehund"] <- "Norwegian Lundhund"
+
+#akc_popular_ranking %>% 
+ # glimpse()
+
+#adoptable_pets %>% 
+ # glimpse
+
+```
+
+Adoption Dataset:
+
+```{r}
+# Create new Breed column to update Breed names
+filter_new_column <- adoptable_pets %>%
+  mutate(Breed_Update = Breed) %>%
+  relocate(Breed_Update, .after = Breed)
+
+# Need to remove - Filter on DOG, remove Mutts and Pit Bulls for only purebreds
+# Comment out !str_dect to look at all adopted dogs. Is there a better way to do this?
+filter_type <- filter_new_column %>% 
+  filter(Type == "DOG") %>% 
+  filter(!str_detect(Breed, "/")) %>% 
+  filter(!str_detect(Breed, "&")) %>% 
+  filter(!str_detect(Breed, ",")) %>% 
+  filter(!str_detect(Breed, regex("pit\\s*bull", ignore_case = TRUE)))
+#identity()
+
+
+# Update to proper case text
+filter_type <- filter_type %>%
+  mutate(
+    Breed_Update = str_to_title(Breed_Update),
+    Breed_Update = str_squish(Breed_Update),
+    Breed = str_to_title(Breed),
+    Breed = str_squish(Breed)
+  )
+```
+
+Rename adoption dogs to match AKC dog breed names
+
+```{r}
+#Update rows to match AKC dog breed names
+filter_type$Breed_Update[filter_type$Breed_Update == "Germ Shepherd"] <- "German Shepherd Dog"
+filter_type$Breed_Update[filter_type$Breed_Update == "Dachshund Lh"] <- "Dachshund"
+filter_type$Breed_Update[filter_type$Breed_Update == "Schnauzer Min"] <- "Miniature Schnauzer"
+filter_type$Breed_Update[filter_type$Breed_Update == "Doberman Pinsch"] <- "Doberman Pinscher"
+filter_type$Breed_Update[filter_type$Breed_Update == "Aust Cattle Dog"] <- "Australian Cattle Dog"
+filter_type$Breed_Update[filter_type$Breed_Update == "Labrador Retr"] <- "Labrador Retriever"
+filter_type$Breed_Update[filter_type$Breed_Update == "Chihuahua Sh"] <- "Chihuahua"
+filter_type$Breed_Update[filter_type$Breed_Update == "Belg Malinois"] <- "Belgian Malinois"
+filter_type$Breed_Update[filter_type$Breed_Update == "Staffordshire"] <- "Staffordshire Bull Terrier"
+filter_type$Breed_Update[filter_type$Breed_Update == "Cocker Span"] <- "Cocker Spaniel"
+filter_type$Breed_Update[filter_type$Breed_Update == "Parson Russ Ter"] <- "Parson Russell Terrier"
+filter_type$Breed_Update[filter_type$Breed_Update == "Eng Bulldog"] <- "Bulldog"
+filter_type$Breed_Update[filter_type$Breed_Update == "Chihuahua Lh"] <- "Chihuahua"
+filter_type$Breed_Update[filter_type$Breed_Update == "Yorkshire Terr"] <- "Yorkshire Terrier"
+filter_type$Breed_Update[filter_type$Breed_Update == "Amer Eskimo"] <- "American Eskimo Dog"
+filter_type$Breed_Update[filter_type$Breed_Update == "St Bernard Rgh"] <- "Saint Bernard"
+filter_type$Breed_Update[filter_type$Breed_Update == "Alaskan Husky"] <- "Siberian Husky"
+filter_type$Breed_Update[filter_type$Breed_Update == "Anatol Shepherd"] <- "Anatolian Shepherd Dog"
+filter_type$Breed_Update[filter_type$Breed_Update == "Alask Malamute"] <- "Alaskan Malamute"
+filter_type$Breed_Update[filter_type$Breed_Update == "Min Pinscher"] <- "Miniature Pinscher"
+filter_type$Breed_Update[filter_type$Breed_Update == "American Staff"] <- "American Staffordshire Terrier"
+filter_type$Breed_Update[filter_type$Breed_Update == "Fox Terr Wire"] <- "Wire Fox Terrier"
+filter_type$Breed_Update[filter_type$Breed_Update == "Aust Shepherd"] <- "Australian Shepherd"
+filter_type$Breed_Update[filter_type$Breed_Update == "Bull Terr Min"] <- "Miniature Bull Terrier"
+filter_type$Breed_Update[filter_type$Breed_Update == "Eng Setter"] <- "English Setter"
+filter_type$Breed_Update[filter_type$Breed_Update == "Golden Retr"] <- "Golden Retriever"
+filter_type$Breed_Update[filter_type$Breed_Update == "West Highland"] <- "West Highland White Terrier"
+filter_type$Breed_Update[filter_type$Breed_Update == "Chinese Sharpei"] <- "Chinese Shar-Pei"
+filter_type$Breed_Update[filter_type$Breed_Update == "Jack"] <- "Russell Terrier"
+filter_type$Breed_Update[filter_type$Breed_Update == "Poodle Stnd"] <- "Poodle"
+filter_type$Breed_Update[filter_type$Breed_Update == "Eng Sprngr Span"] <- "English Springer Spaniel"
+filter_type$Breed_Update[filter_type$Breed_Update == "Chesa Bay Retr"] <- "Chesapeake Bay Retriever"
+filter_type$Breed_Update[filter_type$Breed_Update == "Germ Sh Point"] <- "German Shorthaired Pointer"
+filter_type$Breed_Update[filter_type$Breed_Update == "Fox Terr Smooth"] <- "Smooth Fox Terrier"
+filter_type$Breed_Update[filter_type$Breed_Update == "Rhod Ridgeback"] <- "Rhodesian Ridgeback"
+filter_type$Breed_Update[filter_type$Breed_Update == "Germ Wh Point"] <- "German Wirehaired Pointer"
+filter_type$Breed_Update[filter_type$Breed_Update == "Welsh Corgi Pem"] <- "Pembroke Welsh Corgi"
+filter_type$Breed_Update[filter_type$Breed_Update == "Flat Coat Retr"] <- "Flat-Coated Retriever"
+filter_type$Breed_Update[filter_type$Breed_Update == "Tr Walker Hound"] <- "Treeing Walker Coonhound"
+filter_type$Breed_Update[filter_type$Breed_Update == "Bluetick Hound"] <- "Bluetick Coonhound"
+filter_type$Breed_Update[filter_type$Breed_Update == "Plott Hound"] <- "Plott Hound"
+filter_type$Breed_Update[filter_type$Breed_Update == "Cavalier Span"] <- "Cavalier King Charles Spaniel"
+filter_type$Breed_Update[filter_type$Breed_Update == "Welsh Corgi Car"] <- "Cardigan Welsh Corgi"
+filter_type$Breed_Update[filter_type$Breed_Update == "Amer Foxhound"] <- "American Foxhound"
+filter_type$Breed_Update[filter_type$Breed_Update == "Eng Coonhound"] <- "American English Coonhound"
+filter_type$Breed_Update[filter_type$Breed_Update == "Shetld Sheepdog"] <- "Shetland Sheepdog"
+filter_type$Breed_Update[filter_type$Breed_Update == "Port Water Dog"] <- "Portuguese Water Dog"
+filter_type$Breed_Update[filter_type$Breed_Update == "Norw Buhund"] <- "Norwegian Buhund"
+filter_type$Breed_Update[filter_type$Breed_Update == "Redbone Hound"] <- "Redbone Coonhound"
+filter_type$Breed_Update[filter_type$Breed_Update == "Bruss Griffon"] <- "Brussels Griffon"
+filter_type$Breed_Update[filter_type$Breed_Update == "Norw Elkhound"] <- "Norwegian Elkhound"
+filter_type$Breed_Update[filter_type$Breed_Update == "Collie Rough"] <- "Collie"
+filter_type$Breed_Update[filter_type$Breed_Update == "Rhodesian Ridge"] <- "Rhodesian Ridgeback"
+filter_type$Breed_Update[filter_type$Breed_Update == "Border Collie X"] <- "Border Collie"
+filter_type$Breed_Update[filter_type$Breed_Update == "Airedale Terr"] <- "Airedale Terrier"
+filter_type$Breed_Update[filter_type$Breed_Update == "Clumber Span"] <- "Clumber Spaniel"
+filter_type$Breed_Update[filter_type$Breed_Update == "Irish Watr Span"] <- "Irish Water Spaniel"
+filter_type$Breed_Update[filter_type$Breed_Update == "Ital Greyhound"] <- "Italian Greyhound"
+filter_type$Breed_Update[filter_type$Breed_Update == "Eng Pointer"] <- "Pointer"
+filter_type$Breed_Update[filter_type$Breed_Update == "Collie Smooth"] <- "Collie"
+filter_type$Breed_Update[filter_type$Breed_Update == "St Bernard Smth"] <- "Saint Bernard"
+filter_type$Breed_Update[filter_type$Breed_Update == "Scot Terrier"] <- "Scottish Terrier"
+filter_type$Breed_Update[filter_type$Breed_Update == "Poodle Min"] <- "Poodle"
+filter_type$Breed_Update[filter_type$Breed_Update == "Poodle Toy"] <- "Poodle"
+filter_type$Breed_Update[filter_type$Breed_Update == "Aust Terrier"] <- "Australian Terrier"
+filter_type$Breed_Update[filter_type$Breed_Update == "Schnauzer Stand"] <- "Standard Schnauzer"
+filter_type$Breed_Update[filter_type$Breed_Update == "Eng Foxhound"] <- "English Foxhound"
+filter_type$Breed_Update[filter_type$Breed_Update == "Manchester Terr"] <- "Manchester Terrier"
+filter_type$Breed_Update[filter_type$Breed_Update == "Tibetan Span"] <- "Tibetan Spaniel"
+filter_type$Breed_Update[filter_type$Breed_Update == "Dogue De Bordx"] <- "Dogue de Bordeaux"
+filter_type$Breed_Update[filter_type$Breed_Update == "Podengo Pequeno"] <- "Portuguese Podengo Pequeno"
+filter_type$Breed_Update[filter_type$Breed_Update == "Bouv Flandres"] <- "Bouvier des Flandres"
+filter_type$Breed_Update[filter_type$Breed_Update == "Yorkshire Terri"] <- "Yorkshire Terrier"
+filter_type$Breed_Update[filter_type$Breed_Update == "Tibetan Terr"] <- "Tibetan Terrier"
+filter_type$Breed_Update[filter_type$Breed_Update == "Belg Tervuren"] <- "Belgian Tervuren"
+filter_type$Breed_Update[filter_type$Breed_Update == "Sc Wheat Terr"] <- "Soft Coated Wheaten Terrier"
+filter_type$Breed_Update[filter_type$Breed_Update == "Alaskan Malamut"] <- "Alaskan Malamute"
+filter_type$Breed_Update[filter_type$Breed_Update == "Bernese Mtn Dog"] <- "Bernese Mountain Dog"
+filter_type$Breed_Update[filter_type$Breed_Update == "Hound"] <- "Bloodhound"
+filter_type$Breed_Update[filter_type$Breed_Update == "Dachshund Wh"] <- "Dachshund"
+filter_type$Breed_Update[filter_type$Breed_Update == "Kangal"] <- "Anatolian Shepherd Dog"
+filter_type$Breed_Update[filter_type$Breed_Update == "Schnauzer Giant"] <- "Giant Schnauzer"
+filter_type$Breed_Update[filter_type$Breed_Update == "Chihuahua X"] <- "Chihuahua"
+filter_type$Breed_Update[filter_type$Breed_Update == "Great Pyreneese"] <- "Great Pyrenees"
+filter_type$Breed_Update[filter_type$Breed_Update == "Wh Pt Griffon"] <- "Wirehaired Pointing Griffon"
+filter_type$Breed_Update[filter_type$Breed_Update == "Mex Hairless"] <- "Xoloitzcuintli"
+```
+
+Combine datasets:
+
+```{r}
+# Merge AKC popular ranking and ACK feature descriptions by breed. 
+AKC_merge <- full_join(akc_popular_ranking, feat_desc_name_renamed, by = "Breed")
+
+unmatched_rows_specific_AKC <- AKC_merge %>%
+      filter(is.na(group))
+
+#unmatched_rows_specific_AKC
+```
+
+```{r}
+# Merge AKC data with adoptable dogs by breed.
+full_adoption_dog_list <- left_join(filter_type, AKC_merge, by = c("Breed_Update" = "Breed"))
+
+unmatched_rows_specific_adoption <- full_adoption_dog_list %>%
+      filter(is.na(group))
+```
+
+```{r}
+ #write.csv(full_adoption_dog_list, "my_output_file.csv", row.names = FALSE) 
+```
+
+1.  Does AKC popularity influence adoptions?
+
+```{r}
+akc_long <- akc_popular_ranking %>%
+  mutate(across(starts_with("Ranking."), as.character)) %>%
+  pivot_longer(
+    cols = starts_with("Ranking."),
+    names_to = "Ranking.Year",
+    values_to = "Rank"
+  ) %>%
+  mutate(
+    Ranking.Year = as.numeric(gsub("Ranking\\.", "", Ranking.Year)),
+    Rank = as.numeric(Rank)
+  )
+
+
+akc_adopt <- filter_type %>%
+  mutate(Outcome.Date = mdy(Outcome.Date),
+    OutcomeYear = year(Outcome.Date)) %>%
+  left_join(akc_long, by = c("Breed_Update" = "Breed", "OutcomeYear" = "Ranking.Year")) %>% 
+  filter(OutcomeYear >= 2013 & OutcomeYear <= 2023) %>% 
+  filter(Outcome.Type == "ADOPTION")
+
+
+akc_adopt_summary <- akc_adopt %>%
+  group_by(Breed_Update, OutcomeYear, Rank) %>%
+  summarise(Adoptions = n(), .groups = "drop")
+
+ggplot(akc_adopt_summary, aes(x = Rank, y = Adoptions)) +
+  geom_point(alpha = 0.6, size = 3) +
+  geom_smooth(method = "lm", se = TRUE) +
+  #scale_x_reverse() +
+  labs(
+    title = "Does AKC Popularity Influence Shelter Adoptions?",
+    x = "AKC Popularity Rank (1 = Most Popular)",
+    y = "Number of Adoptions (per breed per year)"
+  ) +
+  theme_minimal(base_size = 14)
+```
+
+Yes AKC does influence number of adoptions :)
+
+2.  What is the turn around duration for adoption and what variables influence it? What are the favorable/unfavorable variables when adopting a dog?
+
+```{r}
+adopt_feat <- filter_type %>%
+  left_join(feat_desc_name_renamed, by = c("Breed_Update" = "Breed")) %>% 
+  filter(Outcome.Type == "ADOPTION") %>% 
+  mutate(Days.in.Shelter = as.numeric(Days.in.Shelter))
+
+turnaround_stats <- adopt_feat %>%
+  summarise(
+    mean_days  = mean(Days.in.Shelter, na.rm = TRUE),
+    median_days = median(Days.in.Shelter, na.rm = TRUE),
+    sd_days = sd(Days.in.Shelter, na.rm = TRUE),
+    n = n()
+  )
+turnaround_stats
+
+adopt_hist <- ggplot(data = adopt_feat, aes(x = Days.in.Shelter)) +
+  geom_histogram(bins = 40) +
+  theme_minimal() +
+  labs(
+    title = "Distribution of Days in Shelter for Adopted Dogs",
+    x = "Days in Shelter",
+    y = "Count of Dogs Adopted"
+  )
+
+ggplotly(adopt_hist)
+
+
+model <- lm(
+  Days.in.Shelter ~ Sex + Size + energy_level_category + trainability_category + demeanor_category + min_ht..cm. + max_ht..cm. + min_wt..kg. + max_wt..kg. + min_life..yrs. + max_life..yrs. + Affectionate.With.Family + Good.With.Young.Children + Good.With.Other.Dogs + Shedding.Level + Coat.Grooming.Frequency + Drooling.Level + Coat.Length +
+    Intake.Type + Intake.Condition + Outcome.Condition,
+  data = adopt_feat
+)
+
+summary(model)
+```
+
+3.  Do popular dogs ever come up for adoption? How quickly do they get adopted compared to less popular breeds?
+
+```{r}
+akc_adopt <- filter_type %>%
+  mutate(
+    Outcome.Date = mdy(Outcome.Date),
+    OutcomeYear = year(Outcome.Date),
+    Days.in.Shelter = as.numeric(as.character(Days.in.Shelter))
+  ) %>%
+  left_join(
+    akc_long,
+    by = c("Breed_Update" = "Breed", "OutcomeYear" = "Ranking.Year")
+  ) %>%
+  filter(
+    Outcome.Type == "ADOPTION",
+    OutcomeYear >= 2013,
+    OutcomeYear <= 2023
+  ) %>%
+  mutate(
+    popularity_group = case_when(
+      Rank <= 10 ~ "Top 10",
+      Rank <= 50 ~ "Rank 11–50",
+      TRUE ~ "Rank 51–200"
+    ),
+    popularity_group = factor(popularity_group,
+       levels = c("Top 10", "Rank 11–50", "Rank 51–200"))
+  )
+
+# Review data for outliers
+#akc_filter <- akc_adopt %>% 
+ # filter(popularity_group == "Top 10") %>% 
+#  arrange(desc(Days.in.Shelter)) %>% 
+ # select(Breed, Breed_Update, Days.in.Shelter, Intake.Type, Intake.Subtype, Intake.Condition, Outcome.Subtype, Outcome.Condition, Rank)
+
+
+# Count of popular dogs in shelter - Yes popular dogs do come up for adoption. Not as many popular dogs compared to the 50-200 ranked dogs
+akc_adopt %>%
+  group_by(popularity_group) %>%
+  summarise(
+    median_days = median(Days.in.Shelter, na.rm = TRUE),
+    mean_days   = mean(Days.in.Shelter, na.rm = TRUE),
+    n = n()
+  )
+
+# How quickly do they get adopted compared to less popular breeds?
+ggplot(akc_adopt, aes(popularity_group, Days.in.Shelter)) +
+  geom_boxplot() +
+  scale_y_log10() +
+  theme_minimal() +
+  labs(
+    title = "Adoption Speed by AKC Popularity",
+    x = "Popularity Group",
+    y = "Days in Shelter (log scale)"
+  )
+
+# Review Outliers for see the common characteristics
+outlier_limits <- akc_adopt %>%
+  group_by(popularity_group) %>%
+  summarise(
+    Q1 = quantile(Days.in.Shelter, 0.25, na.rm = TRUE),
+    Q3 = quantile(Days.in.Shelter, 0.75, na.rm = TRUE),
+    IQR = IQR(Days.in.Shelter, na.rm = TRUE)
+  ) %>%
+  mutate(
+    lower = Q1 - 1.5 * IQR,
+    upper = Q3 + 1.5 * IQR
+  )
+
+outlier_limits
+
+outliers <- akc_adopt %>%
+  left_join(outlier_limits, by = "popularity_group") %>%
+  filter(
+    Days.in.Shelter < lower |
+    Days.in.Shelter > upper
+  ) %>%
+  select(Breed_Update, Days.in.Shelter, popularity_group, Intake.Date, Intake.Type, Intake.Subtype, Intake.Condition, Outcome.Subtype, Rank) %>% 
+  arrange(desc(Days.in.Shelter))
+
+outliers
+
+```
+
+4.  What variables are most impactful for sheltering euthanized dogs?
+
+```{r}
+Euthanized <- filter_type %>% 
+  filter(Outcome.Type == "EUTHANIZE") %>% 
+  mutate(Days.in.Shelter = as.numeric(Days.in.Shelter)) %>% 
+  group_by(Outcome.Subtype) %>% 
+  summarise(median_days = median(Days.in.Shelter, na.rm = TRUE),
+    mean_days   = mean(Days.in.Shelter, na.rm = TRUE),
+    n = n()
+  )
+
+Euthanized %>%
+  select(Outcome.Subtype, mean_days, median_days) %>%
+  pivot_longer(cols = c(mean_days, median_days),
+               names_to = "statistic",
+               values_to = "value") %>%
+  ggplot(aes(x = Outcome.Subtype, y = value, fill = statistic)) +
+  geom_col(position = "dodge") +
+  theme_minimal() +
+  labs(
+    title = "Mean vs Median Days in Shelter by Euthanasia Subtype",
+    x = "Outcome Subtype",
+    y = "Days in Shelter",
+    fill = "Statistic"
+  )  +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none")
+
+# Explain Outcome.Subtype = AGED, find mean/median of euthanized dogs
+filter_type %>% 
+  filter(Outcome.Type == "EUTHANIZE") %>% 
+  group_by(Outcome.Subtype) %>%
+   mutate(
+    Intake.Date = mdy(Intake.Date),
+    Date.Of.Birth = mdy(Date.Of.Birth)
+  ) %>% 
+  mutate(Age.Upon.Intake.Date = as.numeric(Intake.Date - Date.Of.Birth), 
+         Age_Years = floor(Age.Upon.Intake.Date / 365),
+         Age_Days  = Age.Upon.Intake.Date %% 365) %>% 
+  summarise(
+    median_age_years = floor(median(Age.Upon.Intake.Date, na.rm = TRUE) / 365),
+    median_age_days  = median(Age.Upon.Intake.Date, na.rm = TRUE) %% 365,
+    mean_age_years   = floor(mean(Age.Upon.Intake.Date, na.rm = TRUE) / 365),
+    mean_age_days    = floor(mean(Age.Upon.Intake.Date, na.rm = TRUE) %% 365),
+    n = n()
+  )
+
+#Outcome.Type = EUTHANIZE, Outcome.Subtype = AGED, look at the 3 dogs
+# 1 dog is 15 yrs old, 2 are unknown. Outcome condition is untreatable
+filter_type %>% 
+  filter(Outcome.Type == "EUTHANIZE",
+         Outcome.Subtype == "AGED") %>% 
+  select(Name, Breed, Size, Date.Of.Birth, Intake.Subtype, Outcome.Subtype, Outcome.Condition)
+
+# Outcome.Condition = UNTREATABLE
+filter_type %>% 
+  filter(Outcome.Type == "EUTHANIZE",
+         Outcome.Subtype == "AGGRESSIVE") %>% 
+  group_by(Outcome.Condition) %>%
+  summarize(
+    n = n()
+  )
+
+# Breed type - doesn't add much value
+filter_type %>%
+  group_by(Breed_Update) %>%
+  summarise(
+    breed_Euth_n = sum(Outcome.Type == "EUTHANIZE", na.rm = TRUE),
+    total_n = n(),
+    rate = breed_Euth_n / total_n
+  ) %>%
+  filter(breed_Euth_n > 0) %>% 
+  arrange(desc(rate))
+
+# Count of Dogs by Intake Condition for Euthanasia Subtype
+filter_type %>%
+  filter(Outcome.Type == "EUTHANIZE") %>%
+  mutate(Days.in.Shelter = as.numeric(Days.in.Shelter),
+         Outcome.Subtype = factor(Outcome.Subtype,
+      levels = c("AGGRESSIVE", "ILL SEVERE", "BEH SEVERE", "CON SEVERE", "INJ SEVERE", "UNDERAGEWT", "AGED")   
+    )
+         ) %>%
+  group_by(Outcome.Subtype, Intake.Condition) %>%
+  summarise(
+    n = n()
+  ) %>%
+  ggplot(aes(x = Intake.Condition, y = n, fill = Intake.Condition)) +
+  geom_col() +
+  facet_wrap(~ Outcome.Subtype) +
+  theme_minimal() +
+  labs(
+    title = "Count of Dogs by Intake Condition for Euthanasia Subtype",
+    x = "Intake Condition",
+    y = "Count"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "none")
+```
